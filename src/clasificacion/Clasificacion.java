@@ -6,12 +6,12 @@
 package clasificacion;
 
 import java.io.InputStream;
-import java.util.Dictionary;
-import java.util.Enumeration;
+import java.util.ArrayList;
 import weka.classifiers.Classifier;
 import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instance;
+import weka.core.converters.ConverterUtils.DataSource;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
 
@@ -20,62 +20,117 @@ import weka.core.SerializationHelper;
  * @author diegosanchez
  */
 public class Clasificacion {
-    private Classifier classModel;
-    private Instances dataModel;
-    private String classModelFile = "";
-
-    public Clasificacion() throws Exception {
+    
+    public Clasificacion(){
+    }
+    
+    public void clasificar(String[] testCases) throws Exception{
+        String ruta = "nursery_model.model";
         InputStream classModelStream;
-		
-		//  Create a stream object for the model file embedded
-		//  within the JAR file.
-		
-                classModelStream = getClass().getResourceAsStream(classModelFile);
-		classModel = (Classifier)SerializationHelper.read(classModelStream);
-    }
-    
-    public void close() {
-        classModel = null;
-        classModelFile = null;
-    }
-    
-    public String classifySpecies(Dictionary<String, String> measures) throws Exception {
+        classModelStream = getClass().getResourceAsStream(ruta);
+        //classModel = (Classifier)SerializationHelper.read(classModelStream);
+        Classifier clasify = (Classifier)SerializationHelper.read(classModelStream);
         
-        FastVector dataClasses = new FastVector();
-        FastVector dataAttribs = new FastVector();
-        Attribute Class;
+        FastVector parents = new FastVector();
         
-        double values[] = new double[measures.size() + 1];
-        int i = 0, maxIndex = 0;
-        
-        dataClasses.addElement("not_recom");
-        dataClasses.addElement("recommend");
-        dataClasses.addElement("very_recom");
-        dataClasses.addElement("priority");
-        dataClasses.addElement("spec_prior");
-        
-        Class = new Attribute("class", dataClasses);
-        
-        for (Enumeration<String> keys = measures.keys(); keys.hasMoreElements(); ) {
-                String key = keys.nextElement();
-                double val = Double.parseDouble(measures.get(key));			
-                dataAttribs.addElement(new Attribute(key));
-                values[i++] = val;
-        }
-        
-        dataAttribs.addElement(Class);
-        dataModel = new Instances("classify", dataAttribs, 0);
-        dataModel.setClass(Class);
-        dataModel.add(new Instance(1, values));
-        
-        double cl[] = classModel.distributionForInstance(dataModel.instance(0));
+        parents.addElement("usual");
+        parents.addElement("pretentious");
+        parents.addElement("great_pret");
+        Attribute _parent = new Attribute("parents", parents); 
 
-        for(i = 0; i < cl.length; i++){
-                if(cl[i] > cl[maxIndex]){
-                        maxIndex = i;
-                }
-        }
+        FastVector nurs = new FastVector();
+        nurs.addElement("proper");
+        nurs.addElement("less_proper");
+        nurs.addElement("improper");
+        nurs.addElement("critical");
+        nurs.addElement("very_crit");
+        Attribute _has_nurs = new Attribute("has_nurs", nurs);
+
+        FastVector form = new FastVector();
+        form.addElement("complete");
+        form.addElement("completed");
+        form.addElement("incomplete");
+        form.addElement("foster");
+        Attribute _form = new Attribute("form", form);
+
+        FastVector children = new FastVector();
+        children.addElement("1");
+        children.addElement("2");
+        children.addElement("3");
+        children.addElement("more");
+        Attribute _children = new Attribute("children", children);
+
+        FastVector housing = new FastVector();
+        housing.addElement("convenient");
+        housing.addElement("less_conv");
+        housing.addElement("critical");
+        Attribute _housing = new Attribute("housing", housing);
+
+        FastVector finance = new FastVector();
+        finance.addElement("convenient");
+        finance.addElement("inconv");
+        Attribute _finance = new Attribute("finance", finance);
+
+        FastVector social = new FastVector();
+        social.addElement("nonprob");
+        social.addElement("slightly_prob");
+        social.addElement("problematic");
+        Attribute _social = new Attribute("social", social);
+
+        FastVector health = new FastVector();
+        health.addElement("recommended");
+        health.addElement("priority");
+        health.addElement("not_recom");
+        Attribute _health = new Attribute("health", health);
+
+        FastVector Class = new FastVector();
+        Class.addElement("not_recom");
+        Class.addElement("recommend");
+        Class.addElement("very_recom");
+        Class.addElement("priority");
+        Class.addElement("spec_prior");
+        Attribute _Class = new Attribute("class", Class);
         
-        return dataModel.classAttribute().value(maxIndex);
+        FastVector atributos = new FastVector(9);
+        atributos.addElement(_parent);
+        atributos.addElement(_has_nurs);
+        atributos.addElement(_children);
+        atributos.addElement(_finance);
+        atributos.addElement(_form);
+        atributos.addElement(_health);
+        atributos.addElement(_housing);
+        atributos.addElement(_social);
+        atributos.addElement(_Class);
+        
+        ArrayList<Attribute> atributs = new ArrayList<>();
+        atributs.add(_parent);
+        atributs.add(_has_nurs);
+        atributs.add(_children);
+        atributs.add(_finance);
+        atributs.add(_form);
+        atributs.add(_health);
+        atributs.add(_housing);
+        atributs.add(_social);
+        atributs.add(_Class);
+        
+        //Aquí se crea la instacia, que tiene todos los atributos del modelo
+        Instances dataTest = new Instances("TestCases", atributos, 1);
+        dataTest.setClassIndex(8);
+
+        Instance setPrueba = new Instance(9);
+        for(int i = 0; i<8; i++){
+            setPrueba.setValue(atributs.get(i), testCases[i]);
+        }
+
+        //Agregando el set que se desea evaluar.
+        dataTest.add(setPrueba);
+
+        //Realizando la Predicción
+        //La instancia es la 0 debido a que es la unica que se encuentra.
+        double valorP = clasify.classifyInstance(dataTest.instance(0));
+        //get the name of the class value
+        String prediccion=dataTest.classAttribute().value((int)valorP);
+        
+        System.out.println(prediccion);
     }
 }
