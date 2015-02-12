@@ -7,6 +7,8 @@ package clasificacion;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import weka.classifiers.Classifier;
 import weka.core.Attribute;
 import weka.core.FastVector;
@@ -26,13 +28,13 @@ public class Clasificacion {
     
     public void clasificar(String[] testCases) throws Exception{
         String ruta = "nursery_model.model";
+
         InputStream classModelStream;
         classModelStream = getClass().getResourceAsStream(ruta);
         //classModel = (Classifier)SerializationHelper.read(classModelStream);
         Classifier clasify = (Classifier)SerializationHelper.read(classModelStream);
         
         FastVector parents = new FastVector();
-        
         parents.addElement("usual");
         parents.addElement("pretentious");
         parents.addElement("great_pret");
@@ -94,32 +96,39 @@ public class Clasificacion {
         FastVector atributos = new FastVector(9);
         atributos.addElement(_parent);
         atributos.addElement(_has_nurs);
-        atributos.addElement(_children);
-        atributos.addElement(_finance);
         atributos.addElement(_form);
-        atributos.addElement(_health);
+        atributos.addElement(_children);
         atributos.addElement(_housing);
-        atributos.addElement(_social);
+        atributos.addElement(_finance);
+        atributos.addElement(_social); 
+        atributos.addElement(_health);
         atributos.addElement(_Class);
         
         ArrayList<Attribute> atributs = new ArrayList<>();
         atributs.add(_parent);
         atributs.add(_has_nurs);
-        atributs.add(_children);
-        atributs.add(_finance);
         atributs.add(_form);
-        atributs.add(_health);
+        atributs.add(_children);
         atributs.add(_housing);
+        atributs.add(_finance);
         atributs.add(_social);
+        atributs.add(_health);
         atributs.add(_Class);
         
         //Aquí se crea la instacia, que tiene todos los atributos del modelo
         Instances dataTest = new Instances("TestCases", atributos, 1);
         dataTest.setClassIndex(8);
-
+        
+        
         Instance setPrueba = new Instance(9);
-        for(int i = 0; i<8; i++){
-            setPrueba.setValue(atributs.get(i), testCases[i]);
+
+        int index = -1;
+        for(int i = 0; i<8; i++)
+        {
+            index = atributs.get(i).indexOfValue(testCases[i]);
+            //System.out.println(i + " " + atributs.get(i)  + " " + index + " " + testCases[i]);
+            setPrueba.setValue(atributs.get(i), index);
+
         }
 
         //Agregando el set que se desea evaluar.
