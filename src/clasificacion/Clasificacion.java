@@ -26,7 +26,7 @@ public class Clasificacion {
     public Clasificacion(){
     }
     
-    public void clasificar(String[] testCases) throws Exception{
+    public String clasificar(String[] testCases) throws Exception{
         String ruta = "nursery_model.model";
 
         InputStream classModelStream;
@@ -128,7 +128,6 @@ public class Clasificacion {
             index = atributs.get(i).indexOfValue(testCases[i]);
             //System.out.println(i + " " + atributs.get(i)  + " " + index + " " + testCases[i]);
             setPrueba.setValue(atributs.get(i), index);
-
         }
 
         //Agregando el set que se desea evaluar.
@@ -140,6 +139,6 @@ public class Clasificacion {
         //get the name of the class value
         String prediccion=dataTest.classAttribute().value((int)valorP);
         
-        System.out.println(prediccion);
+        return prediccion;
     }
 }
